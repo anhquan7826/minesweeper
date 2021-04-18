@@ -1,0 +1,11 @@
+#ifndef ENUM_BUTTON_STATE
+#define ENUM_BUTTON_STATE
+
+enum ButtonState {
+	BUTTON_MOUSE_OUT,
+	BUTTON_MOUSE_HOVER,
+    BUTTON_MOUSE_DOWN,
+    BUTTON_MOUSE_UP
+};
+
+#endif
