@@ -20,6 +20,7 @@
 
 #include "main_menu.hpp"
 #include "play.hpp"
+#include "win.hpp"
 
 using namespace std;
 
@@ -121,6 +122,7 @@ bool load() {
 
     MAIN_MENU_load(gRenderer, gFont_title, gFont_button, WINDOW_WIDTH, WINDOW_HEIGHT);
     PLAY_load(gRenderer);
+    WIN_load(gRenderer, gFont_title, gFont_button, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     return true;
 }
@@ -143,6 +145,7 @@ int main(int argc, char* argv[]) {
                 }
                 MAIN_MENU_handleEvent(&e, currentState);
                 PLAY_handleEvent(&e, currentState);
+                WIN_handleEvent(&e, currentState);
             }
 
             SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 255);
@@ -160,6 +163,7 @@ int main(int argc, char* argv[]) {
                     break;
                 }
                 case WIN: {
+                    currentState = WIN_render(gRenderer, fadeSpeed);
                     break;
                 }
                 case LOSE: {

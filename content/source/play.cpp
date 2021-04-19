@@ -1,7 +1,7 @@
 #include "play.hpp"
 #include "class_tile.hpp" 
 
-Tile Minefield(16, 16, 34, 383, 10, 37, 37, 1);
+Tile Minefield(16, 16, 255, 383, 10, 37, 37, 1);
 
 void PLAY_load(SDL_Renderer* gRenderer) {
     Minefield.load(gRenderer, "assets/tiles");

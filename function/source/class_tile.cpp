@@ -4,8 +4,38 @@
 
 using namespace std;
 
-Tile::Tile(int _m, int _n, int _k, int _x, int _y, int _w, int _h, int _g) {
+AlphaControl::AlphaControl() {
+    querry = 1;
     alpha = 0;
+}
+void AlphaControl::setFade(int _querry) {
+    querry = _querry;
+}
+void AlphaControl::fade(int fadeSpeed) {
+    switch (querry) {
+        case 0: {
+            if (alpha > 0) {
+                alpha -= fadeSpeed;
+            }
+            if (alpha == 0) {
+                querry = -1;
+            }
+            break;
+        }
+        case 1: {
+            if (alpha < 255) {
+                alpha += fadeSpeed;
+            }
+            if (alpha == 255) {
+                querry = -1;
+            }
+            break;
+        }
+    }
+}
+
+Tile::Tile(int _m, int _n, int _k, int _x, int _y, int _w, int _h, int _g) {
+    isUserPressed = false;
     m = _m; n = _n; k = _k;
     x = _x; y = _y;
     w = _w; h = _h; g = _g;
@@ -24,7 +54,7 @@ Tile::Tile(int _m, int _n, int _k, int _x, int _y, int _w, int _h, int _g) {
         tile_w.push_back(tmp3);
         tile_h.push_back(tmp3);
 
-        cover.push_back(tmp2);
+        tile.push_back(tmp2);
         mine.push_back(tmp2);
     }
     for (int i=0; i<m; i++) {
@@ -50,39 +80,7 @@ bool Tile::load(SDL_Renderer* gRenderer, string pathToFolder) {
             SDL_FreeSurface(loadedSurface);
         }
     }
-    SDL_SetTextureAlphaMod(tx[hidden], alpha);
-    
-    for (int i=0; i<m; i++) {
-        for (int j=0; j<n; j++) {
-            mine[i][j] = num0;
-        }
-    }
-    while (k != 0) {
-        int a = rand()%m;
-        int b = rand()%n;
-        if (mine[a][b] != bomb) {
-            mine[a][b] = bomb;
-            k--;
-        }
-    }
-    int Count;
-    for (int i=0; i<m; i++) {
-        for (int j=0; j<n; j++) {
-            Count=0;
-            if (mine[i][j] != bomb) {
-                for (int a=i-1; a<=i+1; a++) {
-                    if (a<0 || a>=m) {continue;}
-                    for (int b=j-1; b<=j+1; b++) {
-                        if (b<0 || b >= n) {continue;}
-                        if (mine[a][b] == bomb) {
-                            Count++;
-                        }
-                    }
-                }
-                mine[i][j] = (tile_type)Count;
-            }
-        }
-    }
+    generate();
     return true;
 }
 
@@ -91,7 +89,7 @@ void Tile::handleEvent(SDL_Event* e) {
     SDL_GetMouseState(&mouseX, &mouseY);
     for (int i=0; i<m; i++) {
         for (int j=0; j<n; j++) {
-            if (cover[i][j] == hidden) {
+            if (tile[i][j] == hidden) {
                 bool inside = true;
                 if ((mouseX < x+(w+g)*j) || (mouseX > x+(w+g)*j+w)) {
                     inside = false;
@@ -124,25 +122,21 @@ void Tile::handleEvent(SDL_Event* e) {
 }
 
 GameState Tile::render(SDL_Renderer* gRenderer) {
-    cout << (int)alpha << endl;
-    if (alpha < 255) {alpha += 5;}
+    mAlpha.fade(5);
     GameState p = PLAY;
     for (int i=0; i<m; i++) {
         for (int j=0; j<n; j++) {
-            switch (cover[i][j]) {
-                case revealed: {
-                //    if (state[i][j] == BUTTON_MOUSE_UP) {
-                        if (tile_x[i][j] > x+(w+g)*j && tile_y[i][j] > y+(h+g)*i) {
-                            tile_x[i][j] -= 1;
-                            tile_y[i][j] -= 1;
-                        }
-                        if (tile_w[i][j] < w && tile_h[i][j] < h) {
-                            tile_w[i][j] += 2;
-                            tile_h[i][j] += 2;
-                        }
-                //    }
-                    SDL_Rect pos = {tile_x[i][j], tile_y[i][j], tile_w[i][j], tile_h[i][j]};
-                    SDL_RenderCopy(gRenderer, tx[mine[i][j]], NULL, &pos);
+            switch (tile[i][j]) {
+                case num0: case num1: case num2:case num4: case num5: case num6: case num7: case num8:
+                case bomb: case flag: {
+                    if (tile_x[i][j] > x+(w+g)*j && tile_y[i][j] > y+(h+g)*i) {
+                        tile_x[i][j] -= 1;
+                        tile_y[i][j] -= 1;
+                    }
+                    if (tile_w[i][j] < w && tile_h[i][j] < h) {
+                        tile_w[i][j] += 2;
+                        tile_h[i][j] += 2;
+                    }
                     break;
                 }
                 case hidden: {
@@ -182,23 +176,41 @@ GameState Tile::render(SDL_Renderer* gRenderer) {
                         }
                         case BUTTON_MOUSE_UP: {
                             if (mine[i][j] != bomb) {
+                                isUserPressed = true;
                                 revealTile(i, j);
                             } else {
-                                revealAll();
-                                p = LOSE;
+                                if (!isUserPressed) {
+                                    do {
+                                        generate();
+                                    } while (mine[i][j] == bomb);
+                                    isUserPressed = true;
+                                }
+                                else {
+                                    revealAll();
+                                    mAlpha.setFade(0);
+                                    if (mAlpha.alpha == 0) {p = LOSE;}
+                                }
                             }
                             break;
                         }
                     }
-                    SDL_Rect pos = {tile_x[i][j], tile_y[i][j], tile_w[i][j], tile_h[i][j]};
-                    SDL_SetTextureAlphaMod(tx[hidden], alpha);
-                    SDL_RenderCopy(gRenderer, tx[hidden], NULL, &pos);
                     break;
                 }
             }
+            SDL_Rect pos = {tile_x[i][j], tile_y[i][j], tile_w[i][j], tile_h[i][j]};
+            SDL_SetTextureAlphaMod(tx[tile[i][j]], mAlpha.alpha);
+            SDL_RenderCopy(gRenderer, tx[tile[i][j]], NULL, &pos);
         }
     }
-    if (checkWin()) {p = WIN;}
+    if (p != LOSE) {
+        if (checkWin()) {
+            mAlpha.setFade(0);
+            if (mAlpha.alpha == 0) {
+                p = WIN;
+                mAlpha.setFade(1);
+            }
+        }
+    } 
     return p;
 }
 
@@ -207,14 +219,14 @@ void Tile::revealTile(int i, int j) {
     tile_y[i][j] = y+(h+g)*i+2*(h/8);
     tile_w[i][j] = w-2*(w/4); 
     tile_h[i][j] = h-2*(h/4);
-    cover[i][j] = revealed;
+    tile[i][j] = mine[i][j];
     if (mine[i][j] == num0) {
         for (int a=i-1; a<=i+1; a++) {
             if (a<0 || a>=m) {continue;}
             for (int b=j-1; b<=j+1; b++) {
                 if (b<0 || b>=n) {continue;}
-                if (cover[a][b] != revealed) {
-                    cover[a][b] = revealed;
+                if (tile[a][b] == hidden) {
+                    tile[a][b] = mine[a][b];
                     if (mine[a][b] == num0) {
                         revealTile(a, b);
                     }
@@ -231,7 +243,7 @@ void Tile::revealAll() {
             tile_y[i][j] = y+(h+g)*i+2*(h/8);
             tile_w[i][j] = w-2*(w/4); 
             tile_h[i][j] = h-2*(h/4);
-            cover[i][j] = revealed;
+            tile[i][j] = mine[i][j];
         }
     }
 }
@@ -240,7 +252,7 @@ bool Tile::checkWin() {
     bool check = true;
     for (int i=0; i<m; i++) {
         for (int j=0; j<n; j++) {
-            if (cover[i][j] == hidden) {
+            if (tile[i][j] == hidden) {
                 if (mine[i][j] != bomb) {
                     check = false;
                     break;
@@ -250,4 +262,39 @@ bool Tile::checkWin() {
         if (!check) {break;}
     }
     return check;
+}
+
+void Tile::generate() {
+    for (int i=0; i<m; i++) {
+        for (int j=0; j<n; j++) {
+            mine[i][j] = num0;
+        }
+    }
+    int k_tmp = k;
+    while (k_tmp != 0) {
+        int a = rand()%m;
+        int b = rand()%n;
+        if (mine[a][b] != bomb) {
+            mine[a][b] = bomb;
+            k_tmp--;
+        }
+    }
+    int Count;
+    for (int i=0; i<m; i++) {
+        for (int j=0; j<n; j++) {
+            Count=0;
+            if (mine[i][j] != bomb) {
+                for (int a=i-1; a<=i+1; a++) {
+                    if (a<0 || a>=m) {continue;}
+                    for (int b=j-1; b<=j+1; b++) {
+                        if (b<0 || b >= n) {continue;}
+                        if (mine[a][b] == bomb) {
+                            Count++;
+                        }
+                    }
+                }
+                mine[i][j] = (tile_type)Count;
+            }
+        }
+    }
 }
