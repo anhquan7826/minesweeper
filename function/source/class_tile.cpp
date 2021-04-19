@@ -89,7 +89,7 @@ void Tile::handleEvent(SDL_Event* e) {
     SDL_GetMouseState(&mouseX, &mouseY);
     for (int i=0; i<m; i++) {
         for (int j=0; j<n; j++) {
-            if (tile[i][j] == hidden) {
+            if (tile[i][j] == hidden || tile[i][j] == flag) {
                 bool inside = true;
                 if ((mouseX < x+(w+g)*j) || (mouseX > x+(w+g)*j+w)) {
                     inside = false;
@@ -106,18 +106,35 @@ void Tile::handleEvent(SDL_Event* e) {
                             break;
                         }
                         case SDL_MOUSEBUTTONDOWN: {
-                            if (e->button.button == SDL_BUTTON_RIGHT)
-                            state[i][j] = BUTTON_MOUSE_DOWN;
+                            bool left = false, right = false;
+                            if (e->button.button == SDL_BUTTON_LEFT) {left = true;}
+                            if (e->button.button == SDL_BUTTON_RIGHT) {right = true;}
+                            if (left && !right) {
+                                state[i][j] = BUTTON_MOUSELEFT_DOWN;
+                            } 
+                            else if (!left && right) {
+                                state[i][j] = BUTTON_MOUSERIGHT_DOWN;
+                            }
                             break;
                         }
                         case SDL_MOUSEBUTTONUP: {
-                            state[i][j] = BUTTON_MOUSE_UP;
+                            bool left = false, right = false;
+                            if (e->button.button == SDL_BUTTON_LEFT) {left = true;}
+                            if (e->button.button == SDL_BUTTON_RIGHT) {right = true;}
+                            if (left && !right) {
+                                state[i][j] = BUTTON_MOUSELEFT_UP;
+                            } 
+                            else if (!left && right) {
+                                state[i][j] = BUTTON_MOUSERIGHT_UP;
+                            }
                             break;
                         }
                     }
                 }
             }
+            cout << state[i][j] << ' ';
         }
+        cout << endl;
     }
 }
 
@@ -128,7 +145,7 @@ GameState Tile::render(SDL_Renderer* gRenderer) {
         for (int j=0; j<n; j++) {
             switch (tile[i][j]) {
                 case num0: case num1: case num2:case num4: case num5: case num6: case num7: case num8:
-                case bomb: case flag: {
+                case bomb: {
                     if (tile_x[i][j] > x+(w+g)*j && tile_y[i][j] > y+(h+g)*i) {
                         tile_x[i][j] -= 1;
                         tile_y[i][j] -= 1;
@@ -139,7 +156,7 @@ GameState Tile::render(SDL_Renderer* gRenderer) {
                     }
                     break;
                 }
-                case hidden: {
+                case hidden: case flag: {
                     switch (state[i][j]) {
                         case BUTTON_MOUSE_OUT: {
                             if (tile_x[i][j] > x+(w+g)*j && tile_y[i][j] > y+(h+g)*i) {
@@ -163,7 +180,7 @@ GameState Tile::render(SDL_Renderer* gRenderer) {
                             }
                             break;
                         }
-                        case BUTTON_MOUSE_DOWN: {
+                        case BUTTON_MOUSELEFT_DOWN: case BUTTON_MOUSERIGHT_DOWN: {
                             if (tile_x[i][j] < x+(w+g)*j+2*(w/8) && tile_y[i][j] < y+(h+g)*i+2*(h/8)) {
                                 tile_x[i][j] += 2;
                                 tile_y[i][j] += 2;
@@ -174,23 +191,35 @@ GameState Tile::render(SDL_Renderer* gRenderer) {
                             }
                             break;
                         }
-                        case BUTTON_MOUSE_UP: {
-                            if (mine[i][j] != bomb) {
-                                isUserPressed = true;
-                                revealTile(i, j);
-                            } else {
-                                if (!isUserPressed) {
-                                    do {
-                                        generate();
-                                    } while (mine[i][j] == bomb);
+                        case BUTTON_MOUSELEFT_UP: {
+                            if (tile[i][j] == hidden) {
+                                if (mine[i][j] != bomb) {
                                     isUserPressed = true;
+                                    revealTile(i, j);
+                                } else {
+                                    if (!isUserPressed) {
+                                        do {
+                                            generate();
+                                        } while (mine[i][j] == bomb);
+                                        isUserPressed = true;
+                                    }
+                                    else {
+                                        revealAll();
+                                        p = LOSE;
+                                    }
                                 }
-                                else {
-                                    revealAll();
-                                    mAlpha.setFade(0);
-                                    if (mAlpha.alpha == 0) {p = LOSE;}
-                                }
+                            } else {
+                                state[i][j] = BUTTON_MOUSE_OUT;
                             }
+                            break;
+                        }
+                        case BUTTON_MOUSERIGHT_UP: {
+                            if (tile[i][j] != flag) {
+                                tile[i][j] = flag;
+                            } else {
+                                tile[i][j] = hidden;
+                            }
+                            state[i][j] = BUTTON_MOUSE_OUT;
                             break;
                         }
                     }
@@ -204,11 +233,7 @@ GameState Tile::render(SDL_Renderer* gRenderer) {
     }
     if (p != LOSE) {
         if (checkWin()) {
-            mAlpha.setFade(0);
-            if (mAlpha.alpha == 0) {
-                p = WIN;
-                mAlpha.setFade(1);
-            }
+            p = WIN;
         }
     } 
     return p;

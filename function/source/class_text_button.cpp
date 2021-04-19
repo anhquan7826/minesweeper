@@ -40,11 +40,11 @@ void TextButton::handleEvent(SDL_Event* e) {
                     break;
                 }
                 case SDL_MOUSEBUTTONDOWN: {
-                    state = BUTTON_MOUSE_DOWN;
+                    state = BUTTON_MOUSELEFT_DOWN;
                     break;
                 }
                 case SDL_MOUSEBUTTONUP: {
-                    state = BUTTON_MOUSE_UP;
+                    state = BUTTON_MOUSELEFT_UP;
                     break;
                 }
             }
@@ -74,13 +74,13 @@ void TextButton::render(SDL_Renderer* gRenderer, int speedvalue) {
             SDL_RenderDrawRect(gRenderer, &rect);
             text.render(gRenderer, speedvalue);
             break;
-        case BUTTON_MOUSE_DOWN:
+        case BUTTON_MOUSELEFT_DOWN:
             alpha = 255;
             SDL_SetRenderDrawColor(gRenderer, alpha, alpha, alpha, 255);
             SDL_RenderDrawRect(gRenderer, &rect);
             text.render(gRenderer, speedvalue);
             break;
-        case BUTTON_MOUSE_UP:
+        case BUTTON_MOUSELEFT_UP:
             if (text.getFadeState() != FADE_OUT) {
                 if (alpha < 255) {
                     alpha += speedvalue;
@@ -112,7 +112,7 @@ bool TextButton::isButtonVisible() {
 }
 
 bool TextButton::isButtonPressed() {
-    if (state == BUTTON_MOUSE_UP) {
+    if (state == BUTTON_MOUSELEFT_UP) {
         return true;
     }
     return false;

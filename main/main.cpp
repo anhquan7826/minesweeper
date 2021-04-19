@@ -162,13 +162,6 @@ int main(int argc, char* argv[]) {
                     currentState = PLAY_render(gRenderer);
                     break;
                 }
-                case WIN: {
-                    currentState = WIN_render(gRenderer, fadeSpeed);
-                    break;
-                }
-                case LOSE: {
-                    break;
-                }
             }
 
             SDL_RenderPresent(gRenderer);

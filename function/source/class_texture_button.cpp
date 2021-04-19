@@ -61,11 +61,11 @@ void TextureButton::handleEvent(SDL_Event* e) {
                 break;
             }
             case SDL_MOUSEBUTTONDOWN: {
-                state = BUTTON_MOUSE_DOWN;
+                state = BUTTON_MOUSELEFT_DOWN;
                 break;
             }
             case SDL_MOUSEBUTTONUP: {
-                state = BUTTON_MOUSE_UP;
+                state = BUTTON_MOUSELEFT_UP;
                 break;
             }
         }
@@ -82,7 +82,7 @@ void TextureButton::render(SDL_Renderer* gRenderer, int fadeSpeed) {
             if (a[BUTTON_MOUSE_HOVER] > 0) {
                 a[BUTTON_MOUSE_HOVER] -= fadeSpeed;
             }
-            a[BUTTON_MOUSE_DOWN] = 0;
+            a[BUTTON_MOUSELEFT_DOWN] = 0;
             SDL_SetTextureAlphaMod(texture[BUTTON_MOUSE_OUT], a[BUTTON_MOUSE_OUT]);
             SDL_SetTextureAlphaMod(texture[BUTTON_MOUSE_HOVER], a[BUTTON_MOUSE_HOVER]);
             SDL_RenderCopy(gRenderer, texture[BUTTON_MOUSE_OUT], NULL, &renderPos);
@@ -100,12 +100,12 @@ void TextureButton::render(SDL_Renderer* gRenderer, int fadeSpeed) {
             SDL_RenderCopy(gRenderer, texture[BUTTON_MOUSE_OUT], NULL, &renderPos);
             SDL_RenderCopy(gRenderer, texture[BUTTON_MOUSE_HOVER], NULL, &renderPos);
             break;
-        case BUTTON_MOUSE_DOWN:
-            a[BUTTON_MOUSE_DOWN] = 255;
-            SDL_SetTextureAlphaMod(texture[BUTTON_MOUSE_DOWN], a[BUTTON_MOUSE_DOWN]);
-            SDL_RenderCopy(gRenderer, texture[BUTTON_MOUSE_DOWN], NULL, &renderPos);
+        case BUTTON_MOUSELEFT_DOWN:
+            a[BUTTON_MOUSELEFT_DOWN] = 255;
+            SDL_SetTextureAlphaMod(texture[BUTTON_MOUSELEFT_DOWN], a[BUTTON_MOUSELEFT_DOWN]);
+            SDL_RenderCopy(gRenderer, texture[BUTTON_MOUSELEFT_DOWN], NULL, &renderPos);
             break;
-        case BUTTON_MOUSE_UP:
+        case BUTTON_MOUSELEFT_UP:
             if (a[BUTTON_MOUSE_HOVER] < 255) {
                 a[BUTTON_MOUSE_HOVER] += fadeSpeed;
             }
