@@ -5,19 +5,12 @@
 #include "class_texture_button.hpp"
 #include "enum_ButtonState.hpp"
 #include "game_state.hpp"
+#include "alpha_control.hpp"
 
 #include <vector>
 
 enum tile_type{
     num0, num1, num2, num3, num4, num5, num6, num7, num8, bomb, flag, hidden, revealed
-};
-
-struct AlphaControl {
-    Uint8 alpha;
-    int querry;
-    AlphaControl();
-    void setFade(int _querry);
-    void fade(int fadeSpeed);
 };
 
 class Tile {
@@ -38,14 +31,15 @@ class Tile {
 
         bool isUserPressed;
     public:
-        Tile(int _m, int _n, int _k, int _x, int _y, int _w, int _h, int _g);
+        void setup(int _m, int _n, int _k, int _x, int _y, int _w, int _h, int _g);
         bool load(SDL_Renderer* gRenderer, string path);
         void generate();
         void handleEvent(SDL_Event* e);
-        GameState render(SDL_Renderer* gRenderer);
+        GameState render(SDL_Renderer* gRenderer, int fadeSpeed);
         void revealTile(int x, int y);
         void revealAll();
         bool checkWin();
+        void reset();
 };
 
 #endif

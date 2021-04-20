@@ -1,3 +1,4 @@
+#define SDL_MAIN_HANDLED
 // Standard C++ libraries
 #include <iostream>
 #include <vector>
@@ -11,12 +12,8 @@
 
 // Custom headers
 #include "game_state.hpp"
-#include "class_text.hpp"
+#include "level.hpp"
 #include "class_texture.hpp"
-#include "class_text_button.hpp"
-#include "class_timer.hpp"
-#include "class_texture_button.hpp"
-#include "class_tile.hpp"
 
 #include "main_menu.hpp"
 #include "play.hpp"
@@ -39,17 +36,15 @@ const int title_size = 50;
 const int text_size = 20;
 const int button_size = 16;
 
-int fadeSpeed = 5;
+int fadeSpeed = 15;
 
 // Files directory
 string dir_font = "assets/font/whitrabt.ttf";
 
 // Contents
 GameState currentState = MAIN_MENU;
-
-bool isUserClicked = false;
-
 Texture background;
+Level lv = unknown;
 
 // Initiate
 bool initiate() {
@@ -120,8 +115,8 @@ bool load() {
     }
     background.setDimension(0, 0, 1000, 640);
 
-    MAIN_MENU_load(gRenderer, gFont_title, gFont_button, WINDOW_WIDTH, WINDOW_HEIGHT);
-    PLAY_load(gRenderer);
+    if (!MAIN_MENU_load(gRenderer, gFont_title, gFont_button, WINDOW_WIDTH, WINDOW_HEIGHT)) {return false;}
+    if (!PLAY_load(gRenderer)) {return false;}
     WIN_load(gRenderer, gFont_title, gFont_button, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     return true;
@@ -144,7 +139,7 @@ int main(int argc, char* argv[]) {
                     quit = true;
                 }
                 MAIN_MENU_handleEvent(&e, currentState);
-                PLAY_handleEvent(&e, currentState);
+                PLAY_handleEvent(&e, currentState, lv);
                 WIN_handleEvent(&e, currentState);
             }
 
@@ -155,11 +150,11 @@ int main(int argc, char* argv[]) {
 
             switch(currentState) {
                 case MAIN_MENU: {
-                    currentState = MAIN_MENU_render(gRenderer, fadeSpeed);
+                    currentState = MAIN_MENU_render(gRenderer, fadeSpeed, lv);
                     break;
                 }
                 case PLAY: {
-                    currentState = PLAY_render(gRenderer);
+                    currentState = PLAY_render(gRenderer, fadeSpeed, lv);
                     break;
                 }
             }

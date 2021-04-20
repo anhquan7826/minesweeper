@@ -4,37 +4,26 @@
 
 using namespace std;
 
-AlphaControl::AlphaControl() {
-    querry = 1;
-    alpha = 0;
-}
-void AlphaControl::setFade(int _querry) {
-    querry = _querry;
-}
-void AlphaControl::fade(int fadeSpeed) {
-    switch (querry) {
-        case 0: {
-            if (alpha > 0) {
-                alpha -= fadeSpeed;
-            }
-            if (alpha == 0) {
-                querry = -1;
-            }
-            break;
-        }
-        case 1: {
-            if (alpha < 255) {
-                alpha += fadeSpeed;
-            }
-            if (alpha == 255) {
-                querry = -1;
-            }
-            break;
+GameState p = PLAY;
+
+bool Tile::load(SDL_Renderer* gRenderer, string pathToFolder) {
+    for (int i=0; i<12; i++) {
+        stringstream input;
+        input << pathToFolder << '/' << i << ".png";
+        SDL_Surface* loadedSurface = NULL;
+        loadedSurface = IMG_Load(input.str().c_str());
+        if (loadedSurface == NULL) {
+            return false;
+        } else {
+            tx[i] = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+            SDL_FreeSurface(loadedSurface);
         }
     }
+    generate();
+    return true;
 }
 
-Tile::Tile(int _m, int _n, int _k, int _x, int _y, int _w, int _h, int _g) {
+void Tile::setup(int _m, int _n, int _k, int _x, int _y, int _w, int _h, int _g) {
     isUserPressed = false;
     m = _m; n = _n; k = _k;
     x = _x; y = _y;
@@ -67,84 +56,66 @@ Tile::Tile(int _m, int _n, int _k, int _x, int _y, int _w, int _h, int _g) {
     }
 }
 
-bool Tile::load(SDL_Renderer* gRenderer, string pathToFolder) {
-    for (int i=0; i<12; i++) {
-        stringstream input;
-        input << pathToFolder << '/' << i << ".png";
-        SDL_Surface* loadedSurface = NULL;
-        loadedSurface = IMG_Load(input.str().c_str());
-        if (loadedSurface == NULL) {
-            return false;
-        } else {
-            tx[i] = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
-            SDL_FreeSurface(loadedSurface);
-        }
-    }
-    generate();
-    return true;
-}
-
 void Tile::handleEvent(SDL_Event* e) {
-    int mouseX, mouseY;
-    SDL_GetMouseState(&mouseX, &mouseY);
-    for (int i=0; i<m; i++) {
-        for (int j=0; j<n; j++) {
-            if (tile[i][j] == hidden || tile[i][j] == flag) {
-                bool inside = true;
-                if ((mouseX < x+(w+g)*j) || (mouseX > x+(w+g)*j+w)) {
-                    inside = false;
-                }
-                if ((mouseY < y+(h+g)*i) || (mouseY > y+(h+g)*i+h)) {
-                    inside = false;
-                }
-                if (!inside) {
-                    state[i][j] = BUTTON_MOUSE_OUT;
-                } else {
-                    switch (e->type) {
-                        case SDL_MOUSEMOTION: {
-                            state[i][j] = BUTTON_MOUSE_HOVER;
-                            break;
-                        }
-                        case SDL_MOUSEBUTTONDOWN: {
-                            bool left = false, right = false;
-                            if (e->button.button == SDL_BUTTON_LEFT) {left = true;}
-                            if (e->button.button == SDL_BUTTON_RIGHT) {right = true;}
-                            if (left && !right) {
-                                state[i][j] = BUTTON_MOUSELEFT_DOWN;
-                            } 
-                            else if (!left && right) {
-                                state[i][j] = BUTTON_MOUSERIGHT_DOWN;
+    if (p == PLAY) {
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+        for (int i=0; i<m; i++) {
+            for (int j=0; j<n; j++) {
+                if (tile[i][j] == hidden || tile[i][j] == flag) {
+                    bool inside = true;
+                    if ((mouseX < x+(w+g)*j) || (mouseX > x+(w+g)*j+w)) {
+                        inside = false;
+                    }
+                    if ((mouseY < y+(h+g)*i) || (mouseY > y+(h+g)*i+h)) {
+                        inside = false;
+                    }
+                    if (!inside) {
+                        state[i][j] = BUTTON_MOUSE_OUT;
+                    } else {
+                        switch (e->type) {
+                            case SDL_MOUSEMOTION: {
+                                state[i][j] = BUTTON_MOUSE_HOVER;
+                                break;
                             }
-                            break;
-                        }
-                        case SDL_MOUSEBUTTONUP: {
-                            bool left = false, right = false;
-                            if (e->button.button == SDL_BUTTON_LEFT) {left = true;}
-                            if (e->button.button == SDL_BUTTON_RIGHT) {right = true;}
-                            if (left && !right) {
-                                state[i][j] = BUTTON_MOUSELEFT_UP;
-                            } 
-                            else if (!left && right) {
-                                state[i][j] = BUTTON_MOUSERIGHT_UP;
+                            case SDL_MOUSEBUTTONDOWN: {
+                                bool left = false, right = false;
+                                if (e->button.button == SDL_BUTTON_LEFT) {left = true;}
+                                if (e->button.button == SDL_BUTTON_RIGHT) {right = true;}
+                                if (left && !right) {
+                                    state[i][j] = BUTTON_MOUSELEFT_DOWN;
+                                } 
+                                else if (!left && right) {
+                                    state[i][j] = BUTTON_MOUSERIGHT_DOWN;
+                                }
+                                break;
                             }
-                            break;
+                            case SDL_MOUSEBUTTONUP: {
+                                bool left = false, right = false;
+                                if (e->button.button == SDL_BUTTON_LEFT) {left = true;}
+                                if (e->button.button == SDL_BUTTON_RIGHT) {right = true;}
+                                if (left && !right) {
+                                    state[i][j] = BUTTON_MOUSELEFT_UP;
+                                } 
+                                else if (!left && right) {
+                                    state[i][j] = BUTTON_MOUSERIGHT_UP;
+                                }
+                                break;
+                            }
                         }
                     }
                 }
             }
-            cout << state[i][j] << ' ';
         }
-        cout << endl;
     }
 }
 
-GameState Tile::render(SDL_Renderer* gRenderer) {
-    mAlpha.fade(5);
-    GameState p = PLAY;
+GameState Tile::render(SDL_Renderer* gRenderer, int fadeSpeed) {
+    mAlpha.fade(fadeSpeed);
     for (int i=0; i<m; i++) {
         for (int j=0; j<n; j++) {
             switch (tile[i][j]) {
-                case num0: case num1: case num2:case num4: case num5: case num6: case num7: case num8:
+                case num0: case num1: case num2: case num3: case num4: case num5: case num6: case num7: case num8:
                 case bomb: {
                     if (tile_x[i][j] > x+(w+g)*j && tile_y[i][j] > y+(h+g)*i) {
                         tile_x[i][j] -= 1;
@@ -159,33 +130,46 @@ GameState Tile::render(SDL_Renderer* gRenderer) {
                 case hidden: case flag: {
                     switch (state[i][j]) {
                         case BUTTON_MOUSE_OUT: {
-                            if (tile_x[i][j] > x+(w+g)*j && tile_y[i][j] > y+(h+g)*i) {
-                                tile_x[i][j] -= 1;
-                                tile_y[i][j] -= 1;
-                            }
-                            if (tile_w[i][j] < w && tile_h[i][j] < h) {
-                                tile_w[i][j] += 2;
-                                tile_h[i][j] += 2;
-                            }
-                            break;
-                        }
-                        case BUTTON_MOUSE_HOVER: {
-                            if (tile_x[i][j] < x+(w+g)*j+w/8 && tile_y[i][j] < y+(h+g)*i+h/8) {
+                            if (tile_x[i][j] < x+(w+g)*j && tile_y[i][j] < y+(h+g)*i) {
                                 tile_x[i][j] += 1;
                                 tile_y[i][j] += 1;
                             }
-                            if (tile_w[i][j] > w-w/4 && tile_h[i][j] > h-h/4) {
+                            if (tile_w[i][j] > w && tile_h[i][j] > h) {
                                 tile_w[i][j] -= 2;
                                 tile_h[i][j] -= 2;
                             }
                             break;
                         }
-                        case BUTTON_MOUSELEFT_DOWN: case BUTTON_MOUSERIGHT_DOWN: {
-                            if (tile_x[i][j] < x+(w+g)*j+2*(w/8) && tile_y[i][j] < y+(h+g)*i+2*(h/8)) {
+                        case BUTTON_MOUSE_HOVER: {
+                            if (tile_x[i][j] > x+(w+g)*j-g/2 && tile_y[i][j] > y+(h+g)*i-g/2) {
+                                tile_x[i][j] -= 1;
+                                tile_y[i][j] -= 1;
+                            }
+                            if (tile_w[i][j] < w+g && tile_h[i][j] < h+g) {
+                                tile_w[i][j] += 2;
+                                tile_h[i][j] += 2;
+                            }
+                            break;
+                        }
+                        case BUTTON_MOUSELEFT_DOWN: {
+                            if (tile[i][j] == hidden) {
+                                if (tile_x[i][j] < x+(w+g)*j+g/2 && tile_y[i][j] < y+(h+g)*i+g/2) {
+                                    tile_x[i][j] += 2;
+                                    tile_y[i][j] += 2;
+                                }
+                                if (tile_w[i][j] > w-g && tile_h[i][j] > h-g) {
+                                    tile_w[i][j] -= 4;
+                                    tile_h[i][j] -= 4;
+                                }
+                            }
+                            break;
+                        }
+                        case BUTTON_MOUSERIGHT_DOWN: {
+                            if (tile_x[i][j] < x+(w+g)*j+g/2 && tile_y[i][j] < y+(h+g)*i+g/2) {
                                 tile_x[i][j] += 2;
                                 tile_y[i][j] += 2;
                             }
-                            if (tile_w[i][j] > w-2*(w/4) && tile_h[i][j] > h-2*(h/4)) {
+                            if (tile_w[i][j] > w-g && tile_h[i][j] > h-g) {
                                 tile_w[i][j] -= 4;
                                 tile_h[i][j] -= 4;
                             }
@@ -193,7 +177,20 @@ GameState Tile::render(SDL_Renderer* gRenderer) {
                         }
                         case BUTTON_MOUSELEFT_UP: {
                             if (tile[i][j] == hidden) {
+                                if (!isUserPressed) {
+                                    while (mine[i][j] != num0) {
+                                        generate();
+                                    } 
+                                    isUserPressed = true;
+                                }
                                 if (mine[i][j] != bomb) {
+                                    revealTile(i, j);
+                                } else {
+                                    revealAll();
+                                    p = LOSE;
+                                    cout << "YOU LOSE!" << endl;
+                                }
+/*                                 if (mine[i][j] != bomb) {
                                     isUserPressed = true;
                                     revealTile(i, j);
                                 } else {
@@ -207,10 +204,10 @@ GameState Tile::render(SDL_Renderer* gRenderer) {
                                         revealAll();
                                         p = LOSE;
                                     }
-                                }
+                                } */
                             } else {
-                                state[i][j] = BUTTON_MOUSE_OUT;
-                            }
+                                state[i][j] = BUTTON_MOUSE_HOVER;
+                            } 
                             break;
                         }
                         case BUTTON_MOUSERIGHT_UP: {
@@ -219,7 +216,7 @@ GameState Tile::render(SDL_Renderer* gRenderer) {
                             } else {
                                 tile[i][j] = hidden;
                             }
-                            state[i][j] = BUTTON_MOUSE_OUT;
+                            state[i][j] = BUTTON_MOUSE_HOVER;
                             break;
                         }
                     }
@@ -233,6 +230,7 @@ GameState Tile::render(SDL_Renderer* gRenderer) {
     }
     if (p != LOSE) {
         if (checkWin()) {
+            cout << "YOU WIN!" << endl;
             p = WIN;
         }
     } 
@@ -277,7 +275,7 @@ bool Tile::checkWin() {
     bool check = true;
     for (int i=0; i<m; i++) {
         for (int j=0; j<n; j++) {
-            if (tile[i][j] == hidden) {
+            if (tile[i][j] == hidden || tile[i][j] == flag) {
                 if (mine[i][j] != bomb) {
                     check = false;
                     break;
@@ -320,6 +318,17 @@ void Tile::generate() {
                 }
                 mine[i][j] = (tile_type)Count;
             }
+        }
+    }
+}
+
+void Tile::reset() {
+    mAlpha.reset();
+    generate();
+    for (int i=0; i<m; i++) {
+        for (int j=0; j<n; j++) {
+            tile[i][j] = hidden;
+            state[i][j] = BUTTON_MOUSE_OUT;
         }
     }
 }
