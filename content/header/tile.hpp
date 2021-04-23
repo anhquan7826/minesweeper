@@ -1,17 +1,13 @@
 #ifndef _CLASS_TILE
 #define _CLASS_TILE
 
-#include "class_texture.hpp"
-#include "class_texture_button.hpp"
-#include "enum_ButtonState.hpp"
-#include "game_state.hpp"
-#include "alpha_control.hpp"
+#include "enum.hpp"
+#include "controller.hpp"
 
 #include <vector>
-
-enum tile_type{
-    num0, num1, num2, num3, num4, num5, num6, num7, num8, bomb, flag, hidden, revealed
-};
+#include <string>
+#include <SDL.h>
+#include <SDL_image.h>
 
 class Tile {
     private:
@@ -26,10 +22,10 @@ class Tile {
         vector<vector<int>> tile_w;
         vector<vector<int>> tile_h;
 
-        vector<vector<tile_type>> tile;
-        vector<vector<tile_type>> mine;
+        vector<vector<TileState>> tile;
+        vector<vector<TileState>> mine;
 
-        bool isUserPressed;
+        bool isUserPressed = false;
     public:
         void setup(int _m, int _n, int _k, int _x, int _y, int _w, int _h, int _g);
         bool load(SDL_Renderer* gRenderer, string path);
@@ -40,6 +36,8 @@ class Tile {
         void revealAll();
         bool checkWin();
         void reset();
+        int getX();
+        void FadeOut();
 };
 
 #endif

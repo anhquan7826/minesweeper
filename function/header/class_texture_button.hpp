@@ -5,7 +5,7 @@
 #include <SDL_image.h>
 #include <string>
 
-#include "enum_ButtonState.hpp"
+#include "enum.hpp"
 
 using namespace std;
 

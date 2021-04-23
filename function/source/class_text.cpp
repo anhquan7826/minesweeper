@@ -10,12 +10,15 @@ Text::Text() {
     y = 0;
     w = 0;
     h = 0;
-    a = 0;
-    fadeState = FADE_IN;
     isVisible = true;
 }
 
+Text::~Text() {
+    free();
+}
+
 void Text::free() {
+    SDL_DestroyTexture(texture);
     texture = NULL;
     x = 0;
     y = 0;
@@ -37,7 +40,7 @@ void Text::setPosition(int _x, int _y) {
 }
 
 void Text::setFadeState(FadeState state) {
-    fadeState = state;
+    mAlpha.setFadeState(state);
 }
 
 void Text::loadFromText(SDL_Renderer* gRenderer, TTF_Font* gFont, string text, SDL_Color color) {
@@ -50,38 +53,22 @@ void Text::loadFromText(SDL_Renderer* gRenderer, TTF_Font* gFont, string text, S
 }
 
 void Text::render(SDL_Renderer* gRenderer, int speedvalue) {
-    if ((a < 255) && (fadeState == FADE_IN)) {
-        a += speedvalue;
-        if (a == 255) {
-            fadeState = STATIC;
-        }
-    }
-    if ((a > 0) && (fadeState == FADE_OUT)) {
-        a -= speedvalue;
-        if (a == 0) {
-            fadeState = STATIC;
-        }
-    }
-    SDL_SetTextureAlphaMod(texture, a);
+    mAlpha.fade(speedvalue);
+    SDL_SetTextureAlphaMod(texture, mAlpha.alpha);
     SDL_Rect renderPos = {x, y, w, h};
     SDL_RenderCopy(gRenderer, texture, NULL, &renderPos);
 }
 
 void Text::reset() {
-    fadeState = FADE_IN;
-    a = 0;
+    mAlpha.reset();
     isVisible = true;
 }
 
 bool Text::isTextVisible() {
-    if (a == 0) {
+    if (mAlpha.alpha == 0) {
         return false;
     }
     else {
         return true;
     }
-}
-
-int Text::getFadeState() {
-    return fadeState;
 }

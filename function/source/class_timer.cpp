@@ -1,7 +1,9 @@
 #include "class_timer.hpp"
-#include <SDL.h>
+#include <iomanip>
 
 using namespace std;
+
+stringstream X;
 
 Timer::Timer() {
     tick_start = 0;
@@ -68,4 +70,15 @@ bool Timer::countDown(int amount) {
         return true;
     }
     return false;
+}
+
+string Timer::getClockCount() {
+    int time = getTicks()/1000;
+    X.str("");
+    X << setw(2) << setfill('0') << time/3600;
+    time %= 3600;
+    X << ':' << setw(2) << setfill('0') << time/60;
+    time %= 60;
+    X << ':' << setw(2) << setfill('0') << time;
+    return X.str();
 }

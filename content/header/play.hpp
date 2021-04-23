@@ -1,8 +1,7 @@
 #ifndef _PLAY
 #define _PLAY
 
-#include "game_state.hpp"
-#include "level.hpp"
+#include "enum.hpp"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>

@@ -1,13 +1,15 @@
 #include "main_menu.hpp"
 
 #include "class_text.hpp"
-#include "class_text_button.hpp"
-#include "controller_struct.hpp"
+#include "controller.hpp"
 #include "class_static_texture_button.hpp"
 
 using namespace std;
 
-Controller main_menu;
+const int WINDOW_WIDTH = 1000;
+const int WINDOW_HEIGHT = 640;
+
+LineControl main_menu;
 
 Text menu_title;
 Text menu_level;
@@ -17,15 +19,28 @@ STxButton menu_easy;
 STxButton menu_hard;
 STxButton menu_expert;
 
+TTF_Font* gFont_title = NULL;
+TTF_Font* gFont_text = NULL;
+
+const int title_size = 50;
+const int text_size = 35;
+
 enum menu_state {
     _begin, _choose
 };
 menu_state m = _begin;
 
-bool MAIN_MENU_load(SDL_Renderer* gRenderer, TTF_Font* gFont_title, TTF_Font* gFont_button, int WINDOW_WIDTH, int WINDOW_HEIGHT) {
+bool MAIN_MENU_load(SDL_Renderer* gRenderer) {
+    gFont_title = TTF_OpenFont("assets/font/whitrabt.ttf", title_size);
+    if (gFont_title == NULL) {
+        cout << "Cannot load font for MAIN_MENU" << endl;
+        return false;
+    }
+    gFont_text = TTF_OpenFont("assets/font/whitrabt.ttf", text_size);
+
     menu_title.loadFromText(gRenderer, gFont_title, "MINESWEEPER", {255, 255, 255});
     menu_title.setPosition(WINDOW_WIDTH/2-menu_title.getWidth()/2, 100);
-    menu_level.loadFromText(gRenderer, gFont_button, "Choose Level...", {255, 255, 255});
+    menu_level.loadFromText(gRenderer, gFont_text, "Choose Level...", {255, 255, 255});
     menu_level.setPosition(WINDOW_WIDTH/2-menu_title.getWidth()/2, 100);
     if (!menu_start.load(gRenderer, "assets/button/play.png")) {return false;}
     menu_start.setDimension(WINDOW_WIDTH/2-125/2, WINDOW_HEIGHT-200, 125, 125);
@@ -65,7 +80,7 @@ GameState MAIN_MENU_render(SDL_Renderer* gRenderer, int fadeSpeed, Level& lv) {
             if (menu_start.isButtonPressed()) {
                 main_menu.next = true;
                 menu_title.setFadeState(FADE_OUT);
-                menu_start.setFade(0);
+                menu_start.setFadeState(FADE_OUT);
             }
             if (main_menu.next && !menu_title.isTextVisible()) {
                 m = _choose;
@@ -81,9 +96,9 @@ GameState MAIN_MENU_render(SDL_Renderer* gRenderer, int fadeSpeed, Level& lv) {
             menu_hard.render(gRenderer, fadeSpeed);
             menu_expert.render(gRenderer, fadeSpeed);
             if (menu_easy.isButtonPressed() || menu_hard.isButtonPressed() || menu_expert.isButtonPressed()) {
-                menu_easy.setFade(0);
-                menu_hard.setFade(0);
-                menu_expert.setFade(0);
+                menu_easy.setFadeState(FADE_OUT);
+                menu_hard.setFadeState(FADE_OUT);
+                menu_expert.setFadeState(FADE_OUT);
                 menu_level.setFadeState(FADE_OUT);
                 main_menu.next = true;
             }
@@ -96,6 +111,7 @@ GameState MAIN_MENU_render(SDL_Renderer* gRenderer, int fadeSpeed, Level& lv) {
                 menu_easy.reset();
                 menu_hard.reset();
                 menu_expert.reset();
+                m = _begin;
                 p = PLAY;
             }
             break;

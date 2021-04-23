@@ -4,23 +4,21 @@
 #include <string>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include "enum.hpp"
+#include "controller.hpp"
 
 using namespace std;
-
-enum FadeState {
-    FADE_IN, FADE_OUT, STATIC
-};
 
 class Text {
     private:
         SDL_Texture* texture;
         int x, y;
         int w, h;
-        Uint8 a;
-        FadeState fadeState;
+        AlphaControl mAlpha;
         bool isVisible;
     public:
         Text();
+        ~Text();
         void free();
         int getWidth();
         int getHeight();
@@ -30,7 +28,6 @@ class Text {
         void setFadeState(FadeState state);
         bool isTextVisible();
         void reset();
-        int getFadeState();
 };
 
 #endif

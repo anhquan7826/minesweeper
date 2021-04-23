@@ -1,4 +1,4 @@
-#include "class_tile.hpp"
+#include "tile.hpp"
 #include <sstream>
 #include <iostream>
 
@@ -30,7 +30,7 @@ void Tile::setup(int _m, int _n, int _k, int _x, int _y, int _w, int _h, int _g)
     w = _w; h = _h; g = _g;
     for (int i=0; i<m; i++) {
         vector<ButtonState> tmp1;
-        vector<tile_type> tmp2;
+        vector<TileState> tmp2;
         vector<int> tmp3;
         for (int j=0; j<n; j++) {
             tmp1.push_back(BUTTON_MOUSE_OUT);
@@ -188,23 +188,7 @@ GameState Tile::render(SDL_Renderer* gRenderer, int fadeSpeed) {
                                 } else {
                                     revealAll();
                                     p = LOSE;
-                                    cout << "YOU LOSE!" << endl;
                                 }
-/*                                 if (mine[i][j] != bomb) {
-                                    isUserPressed = true;
-                                    revealTile(i, j);
-                                } else {
-                                    if (!isUserPressed) {
-                                        do {
-                                            generate();
-                                        } while (mine[i][j] == bomb);
-                                        isUserPressed = true;
-                                    }
-                                    else {
-                                        revealAll();
-                                        p = LOSE;
-                                    }
-                                } */
                             } else {
                                 state[i][j] = BUTTON_MOUSE_HOVER;
                             } 
@@ -230,7 +214,6 @@ GameState Tile::render(SDL_Renderer* gRenderer, int fadeSpeed) {
     }
     if (p != LOSE) {
         if (checkWin()) {
-            cout << "YOU WIN!" << endl;
             p = WIN;
         }
     } 
@@ -316,7 +299,7 @@ void Tile::generate() {
                         }
                     }
                 }
-                mine[i][j] = (tile_type)Count;
+                mine[i][j] = (TileState)Count;
             }
         }
     }
@@ -325,10 +308,20 @@ void Tile::generate() {
 void Tile::reset() {
     mAlpha.reset();
     generate();
+    p = PLAY;
+    isUserPressed = false;
     for (int i=0; i<m; i++) {
         for (int j=0; j<n; j++) {
             tile[i][j] = hidden;
             state[i][j] = BUTTON_MOUSE_OUT;
         }
     }
+}
+
+int Tile::getX() {
+    return x;
+}
+
+void Tile::FadeOut() {
+    mAlpha.setFadeState(FADE_OUT);
 }

@@ -2,6 +2,8 @@
 #define CLASS_TIMER
 
 #include <SDL.h>
+#include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -20,6 +22,7 @@ class Timer {
         Uint32 getTicks();
         int getState();
         bool countDown(int amount);
+        string getClockCount();
 };
 
 #endif
