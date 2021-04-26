@@ -1,4 +1,5 @@
 #include "class_static_texture_button.hpp"
+#include "sound.hpp"
 
 STxButton::STxButton() {
     org_x = 0; org_y = 0; org_w = 0; org_h = 0;
@@ -60,6 +61,7 @@ void STxButton::handleEvent(SDL_Event* e) {
                 }
                 case SDL_MOUSEBUTTONUP: {
                     state = BUTTON_MOUSELEFT_UP;
+                    playButton();
                     isPressed = true;
                     break;
                 }

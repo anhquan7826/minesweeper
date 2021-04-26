@@ -15,7 +15,7 @@ enum FadeState {
 };
 
 enum GameState {
-    MAIN_MENU, PLAY, WIN, LOSE
+    MAIN_MENU, PLAY, WIN, LOSE, QUIT
 };
 
 enum MinefieldState {
@@ -23,7 +23,7 @@ enum MinefieldState {
 };
 
 enum TileState {
-    num0, num1, num2, num3, num4, num5, num6, num7, num8, bomb, flag, hidden
+    num0, num1, num2, num3, num4, num5, num6, num7, num8, bomb, bomb_clicked, bomb_found, flag, hidden
 };
 
 enum Level {

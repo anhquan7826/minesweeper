@@ -6,8 +6,8 @@
 
 using namespace std;
 
-const int WINDOW_WIDTH = 1000;
-const int WINDOW_HEIGHT = 640;
+const int WINDOW_WIDTH = 1280;
+const int WINDOW_HEIGHT = 700;
 
 LineControl main_menu;
 
@@ -15,6 +15,8 @@ Text menu_title;
 Text menu_level;
 
 STxButton menu_start;
+STxButton menu_quit;
+
 STxButton menu_easy;
 STxButton menu_hard;
 STxButton menu_expert;
@@ -39,17 +41,21 @@ bool MAIN_MENU_load(SDL_Renderer* gRenderer) {
     gFont_text = TTF_OpenFont("assets/font/whitrabt.ttf", text_size);
 
     menu_title.loadFromText(gRenderer, gFont_title, "MINESWEEPER", {255, 255, 255});
-    menu_title.setPosition(WINDOW_WIDTH/2-menu_title.getWidth()/2, 100);
+    menu_title.setPosition(WINDOW_WIDTH/2-menu_title.getWidth()/2, 200);
     menu_level.loadFromText(gRenderer, gFont_text, "Choose Level...", {255, 255, 255});
-    menu_level.setPosition(WINDOW_WIDTH/2-menu_title.getWidth()/2, 100);
+    menu_level.setPosition(WINDOW_WIDTH/2-menu_title.getWidth()/2, 200);
+
     if (!menu_start.load(gRenderer, "assets/button/play.png")) {return false;}
-    menu_start.setDimension(WINDOW_WIDTH/2-125/2, WINDOW_HEIGHT-200, 125, 125);
+    menu_start.setDimension(WINDOW_WIDTH/2-125-10, WINDOW_HEIGHT-200, 125, 125);
+    if (!menu_quit.load(gRenderer, "assets/button/quit.png")) {return false;}
+    menu_quit.setDimension(WINDOW_WIDTH/2+10, WINDOW_HEIGHT-200, 125, 125);
+
     if (!menu_easy.load(gRenderer, "assets/button/9x9.png")) {return false;}
-    menu_easy.setDimension(300, WINDOW_HEIGHT-200, 120, 120);
+    menu_easy.setDimension(WINDOW_WIDTH/2-60-20-120, WINDOW_HEIGHT-200, 120, 120);
     if (!menu_hard.load(gRenderer, "assets/button/16x16.png")) {return false;}
-    menu_hard.setDimension(440, WINDOW_HEIGHT-200, 120, 120);
+    menu_hard.setDimension(WINDOW_WIDTH/2-60, WINDOW_HEIGHT-200, 120, 120);
     if (!menu_expert.load(gRenderer, "assets/button/30x30.png")) {return false;}
-    menu_expert.setDimension(580, WINDOW_HEIGHT-200, 120, 120);
+    menu_expert.setDimension(WINDOW_WIDTH/2+60+20, WINDOW_HEIGHT-200, 120, 120);
     return true;
 }
 
@@ -58,6 +64,7 @@ void MAIN_MENU_handleEvent(SDL_Event* e, GameState state) {
         switch (m) {
             case _begin: {
                 menu_start.handleEvent(e);
+                menu_quit.handleEvent(e);
                 break;
             }
             case _choose: {
@@ -76,17 +83,23 @@ GameState MAIN_MENU_render(SDL_Renderer* gRenderer, int fadeSpeed, Level& lv) {
         case _begin: {
             menu_title.render(gRenderer, fadeSpeed);
             menu_start.render(gRenderer, fadeSpeed);
+            menu_quit.render(gRenderer, fadeSpeed);
 
-            if (menu_start.isButtonPressed()) {
+            if (menu_start.isButtonPressed() || menu_quit.isButtonPressed()) {
                 main_menu.next = true;
                 menu_title.setFadeState(FADE_OUT);
                 menu_start.setFadeState(FADE_OUT);
+                menu_quit.setFadeState(FADE_OUT);
             }
-            if (main_menu.next && !menu_title.isTextVisible()) {
+            if (main_menu.next && !menu_start.isButtonVisible() && menu_start.isButtonPressed()) {
                 m = _choose;
                 main_menu.reset();
                 menu_title.reset();
                 menu_start.reset();
+                menu_quit.reset();
+            }
+            if (main_menu.next && menu_quit.isButtonPressed() && !menu_quit.isButtonVisible()) {
+                p = QUIT;
             }
             break;
         }

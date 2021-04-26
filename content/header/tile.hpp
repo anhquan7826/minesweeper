@@ -12,7 +12,9 @@
 class Tile {
     private:
         vector<vector<ButtonState>> state;
-        SDL_Texture* tx[12];
+        SDL_Texture* tx[14];
+        SDL_Rect sprite[3];
+        int currentSprite = 0;
         int m, n, k;
         int x, y;
         int w, h, g;
@@ -33,7 +35,7 @@ class Tile {
         void handleEvent(SDL_Event* e);
         GameState render(SDL_Renderer* gRenderer, int fadeSpeed);
         void revealTile(int x, int y);
-        void revealAll();
+        void revealAll(int a, int b);
         bool checkWin();
         void reset();
         int getX();

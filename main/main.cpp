@@ -15,12 +15,13 @@
 #include "class_texture.hpp"
 #include "main_menu.hpp"
 #include "play.hpp"
+#include "sound.hpp"
 
 using namespace std;
 
 // Global variables
-const int WINDOW_WIDTH = 1000;
-const int WINDOW_HEIGHT = 640;
+const int WINDOW_WIDTH = 1280;
+const int WINDOW_HEIGHT = 700;
 
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
@@ -29,7 +30,6 @@ int fadeSpeed = 10;
 
 // Contents
 GameState currentState = MAIN_MENU;
-Texture background;
 Level lv = unknown;
 
 // Initiate
@@ -74,6 +74,7 @@ void close() {
     gWindow = NULL;
     SDL_DestroyRenderer(gRenderer);
     gRenderer = NULL;
+    SND_close();
     IMG_Quit();
     TTF_Quit();
     Mix_Quit();
@@ -82,14 +83,9 @@ void close() {
 
 // Load
 bool load() {
-    if (!background.loadFromFile(gRenderer, "assets/background/background.png")) {
-        return false;
-    }
-    background.setDimension(0, 0, 1000, 640);
-
     if (!MAIN_MENU_load(gRenderer)) {return false;}
     if (!PLAY_load(gRenderer)) {return false;}
-
+    if (!SND_load()) {return false;}
     return true;
 }
 
@@ -113,10 +109,11 @@ int main(int argc, char* argv[]) {
                 PLAY_handleEvent(&e, currentState, lv);
             }
 
-            SDL_SetRenderDrawColor(gRenderer, 100, 100, 100, 255);
+            SDL_SetRenderDrawColor(gRenderer, 25, 25, 25, 255);
             SDL_RenderClear(gRenderer);
 
         //    background.render(gRenderer);
+            playBackground();
 
             switch(currentState) {
                 case MAIN_MENU: {
@@ -125,6 +122,10 @@ int main(int argc, char* argv[]) {
                 }
                 case PLAY: {
                     currentState = PLAY_render(gRenderer, fadeSpeed, lv);
+                    break;
+                }
+                case QUIT: {
+                    quit = true;
                     break;
                 }
             }
