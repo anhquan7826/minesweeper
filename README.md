@@ -1,4 +1,4 @@
-# minesweeper
+# Minesweeper
 ## Giới thiệu.
 Dò mìn hay gỡ boom (tiếng Anh: Minesweeper) là một trò chơi trên máy tính dành cho một người chơi.
 Trong Dò mìn, người chơi phải mở được tất cả các ô không có mìn trên một bảng ô vuông.
